@@ -1,6 +1,6 @@
 import com.example.physicistscard.transmissionModels.community.content.Content
 import com.example.physicistscard.utils.LocalDateTimeSerializer
-import kotlinx.datetime.LocalDateTime
+import kotlinx.datetime.Instant
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -10,9 +10,9 @@ data class Post(
     val title: String,
     val contents: List<Content>, // 使用多态序列化
     @Serializable(with = LocalDateTimeSerializer::class)
-    val createdAt: LocalDateTime,
+    val createdAt: Instant,
     @Serializable(with = LocalDateTimeSerializer::class)
-    val updatedAt: LocalDateTime?,
+    val updatedAt: Instant?,
     val category: String?, // 分类
     val tags: List<String> // 标签
 )

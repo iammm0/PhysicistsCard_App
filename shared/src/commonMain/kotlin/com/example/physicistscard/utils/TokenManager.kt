@@ -1,6 +1,6 @@
 package com.example.physicistscard.utils
 
-import com.example.physicistscard.apiServices.IAuthApiService
+import com.example.physicistscard.apiServices.interfaces.IAuthApiService
 
 class TokenManager(private val authApiService: IAuthApiService) {
     private var token: String? = null

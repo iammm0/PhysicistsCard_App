@@ -4,11 +4,19 @@ pluginManagement {
         google()
         gradlePluginPortal()
         mavenCentral()
+
+        maven {
+            url = uri("https://mirrors.aliyun.com/maven/repository/")
+        }
     }
 }
 
 dependencyResolutionManagement {
     repositories {
+        maven {
+            url = uri("https://mirrors.aliyun.com/maven/repository/")
+        }
+
         google()
         mavenCentral()
     }
