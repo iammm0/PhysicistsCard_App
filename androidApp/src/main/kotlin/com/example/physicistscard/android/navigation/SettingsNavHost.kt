@@ -1,10 +1,10 @@
 package com.example.physicistscard.android.navigation
 
 import androidx.compose.runtime.Composable
-import androidx.navigation.NavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.example.physicistscard.android.navigation.whole.BottomNavItem
 import com.example.physicistscard.android.settings.SettingMain
 import com.example.physicistscard.android.settings.components.ThemeSettingsScreen
 import com.example.physicistscard.android.settings.screens.AboutPhysCardScreen

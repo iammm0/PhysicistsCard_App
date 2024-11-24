@@ -6,6 +6,8 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.physicistscard.android.messages.MessageMain
 import com.example.physicistscard.android.messages.screens.MessageDetailScreen
+import com.example.physicistscard.android.navigation.whole.BottomNavItem
+import com.example.physicistscard.android.navigation.whole.getMessageById
 
 @Composable
 fun NotificationNavHost() {

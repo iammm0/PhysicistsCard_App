@@ -37,7 +37,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CommentCard(comment: Comment, onReply: (String) -> Unit) {
     var replyContent by remember { mutableStateOf("") }

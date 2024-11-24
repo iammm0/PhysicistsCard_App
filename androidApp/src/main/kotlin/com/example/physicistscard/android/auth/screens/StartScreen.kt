@@ -42,7 +42,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.physicistscard.android.auth.components.AppLogo
-import com.example.physicistscard.android.navigation.BottomNavItem
+import com.example.physicistscard.android.navigation.whole.BottomNavItem
 import kotlinx.coroutines.delay
 
 @Composable

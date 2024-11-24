@@ -10,6 +10,7 @@ import com.example.physicistscard.android.community.screens.CollectedPostsScreen
 import com.example.physicistscard.android.community.screens.EditPostScreen
 import com.example.physicistscard.android.community.screens.LikedPostsScreen
 import com.example.physicistscard.android.community.screens.MyPostsScreen
+import com.example.physicistscard.android.navigation.whole.BottomNavItem
 
 @Composable
 fun CommunityNavHost() {

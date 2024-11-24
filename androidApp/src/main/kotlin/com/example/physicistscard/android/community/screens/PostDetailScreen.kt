@@ -60,7 +60,7 @@ fun PostDetailScreen(
     postId: String?,
     navController: NavController
 ) {
-    val post = com.example.physicistscard.android.navigation.getPostById(postId)
+    val post = com.example.physicistscard.android.navigation.whole.getPostById(postId)
 
     var commentText by remember { mutableStateOf(TextFieldValue("")) }
     val comments = remember { mutableStateOf(getInitialComments()) }

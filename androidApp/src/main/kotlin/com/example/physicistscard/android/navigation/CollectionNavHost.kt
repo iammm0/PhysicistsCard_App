@@ -10,6 +10,9 @@ import com.example.physicistscard.android.collection.screens.CollectionDetailScr
 import com.example.physicistscard.android.collection.screens.LikedWorksScreen
 import com.example.physicistscard.android.collection.screens.MyWorksScreen
 import com.example.physicistscard.android.collection.screens.SubmitWorkScreen
+import com.example.physicistscard.android.error.ErrorScreen
+import com.example.physicistscard.android.navigation.whole.BottomNavItem
+import kotlinx.uuid.UUID
 
 @Composable
 fun CollectionNavHost() {
@@ -23,9 +26,19 @@ fun CollectionNavHost() {
         }
         composable("collection-main") { CollectionMain(navController) }
         composable("collection-detail/{workId}") { backStackEntry ->
-            val workId = backStackEntry.arguments?.getString("workId")
+            val workIdString = backStackEntry.arguments?.getString("workId")
+            val workId = try {
+                workIdString?.let { UUID(it) }
+            } catch (e: IllegalArgumentException) {
+                null
+            }
             if (workId != null) {
                 CollectionDetailScreen(workId = workId, navController = navController)
+            } else {
+                ErrorScreen(
+                    message = "无效的 Work ID：$workIdString",
+                    navController = navController
+                )
             }
         }
         composable("user-work-status") {

@@ -16,8 +16,8 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
-import com.example.physicistscard.android.navigation.BottomNavItem
-import com.example.physicistscard.android.navigation.NavigationHost
+import com.example.physicistscard.android.navigation.whole.BottomNavItem
+import com.example.physicistscard.android.navigation.whole.NavigationHost
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable

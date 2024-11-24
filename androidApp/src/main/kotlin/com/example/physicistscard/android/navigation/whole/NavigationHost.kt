@@ -1,4 +1,4 @@
-package com.example.physicistscard.android.navigation
+package com.example.physicistscard.android.navigation.whole
 
 import PostDetailScreen
 import androidx.compose.animation.fadeIn
@@ -16,7 +16,6 @@ import com.example.physicistscard.android.auth.screens.LoginPhoneScreen
 import com.example.physicistscard.android.auth.screens.RegisterEmailScreen
 import com.example.physicistscard.android.auth.screens.RegisterPhoneScreen
 import com.example.physicistscard.android.auth.screens.StartScreen
-import com.example.physicistscard.android.collection.CollectionItem
 import com.example.physicistscard.android.collection.CollectionMain
 import com.example.physicistscard.android.collection.screens.CollectedWorksScreen
 import com.example.physicistscard.android.collection.screens.CollectionDetailScreen
@@ -29,6 +28,7 @@ import com.example.physicistscard.android.community.screens.CollectedPostsScreen
 import com.example.physicistscard.android.community.screens.EditPostScreen
 import com.example.physicistscard.android.community.screens.LikedPostsScreen
 import com.example.physicistscard.android.community.screens.MyPostsScreen
+import com.example.physicistscard.android.error.ErrorScreen
 import com.example.physicistscard.android.messages.Message
 import com.example.physicistscard.android.messages.MessageMain
 import com.example.physicistscard.android.messages.screens.MessageDetailScreen
@@ -38,6 +38,8 @@ import com.example.physicistscard.android.settings.screens.AboutPhysCardScreen
 import com.example.physicistscard.android.settings.screens.AccountManagerScreen
 import com.example.physicistscard.android.settings.screens.FeedbackScreen
 import com.example.physicistscard.android.settings.screens.LanguageSettingsScreen
+import com.example.physicistscard.android.settings.screens.UserProfileScreen
+import kotlinx.uuid.UUID
 
 @Composable
 fun NavigationHost(navController: NavHostController) {
@@ -57,55 +59,76 @@ fun NavigationHost(navController: NavHostController) {
             slideOutHorizontally(targetOffsetX = { 1000 }) + fadeOut()
         }
     ) {
-        // 认证系统相关界面
-        composable("start") { StartScreen(navController) }
-        composable("login") { LoginNormalScreen(navController) }
-        composable("phone_register") { RegisterPhoneScreen(navController) }
-        composable("email_register") { RegisterEmailScreen(navController) }
-        composable("phone_login") { LoginPhoneScreen(navController) }
-        composable("email_login") { LoginEmailScreen(navController) }
+        // 登录认证系统相关界面
+        composable("start") {
+            StartScreen(navController)
+        }
+        composable("login") {
+            LoginNormalScreen(navController)
+        }
+        composable("phone_register") {
+            RegisterPhoneScreen(navController)
+        }
+        composable("email_register") {
+            RegisterEmailScreen(navController)
+        }
+        composable("phone_login") {
+            LoginPhoneScreen(navController)
+        }
+        composable("email_login") {
+            LoginEmailScreen(navController)
+        }
+
 
         // 社区系统相关界面
         composable(BottomNavItem.Community.route) {
             CommunityMain(navController)
         }
-
         composable("community-edit-post") { EditPostScreen(navController) }
-
-        // 推送详情页面，接收postId参数
         composable("postDetail/{postId}") { backStackEntry ->
             val postId = backStackEntry.arguments?.getString("postId")
-
             // 显示推送详情
             PostDetailScreen(postId = postId, navController = navController)
         }
-        composable("submit-work") {
-            SubmitWorkScreen(navController)
-        }
-
-        composable("collection-detail/{workId}") { backStackEntry ->
-            val workId = backStackEntry.arguments?.getString("workId")
-
-            if (workId != null) {
-                CollectionDetailScreen(workId = workId, navController)
-            }
-        }
-
         composable("liked-posts") { LikedPostsScreen(navController) }
         composable("collected-posts") { CollectedPostsScreen(navController) }
         composable("my-posts") { MyPostsScreen(navController) }
 
-        composable("user-work-status") {
-            MyWorksScreen(navController)
-        }
         // 征集系统相关页面
         composable(BottomNavItem.Collection.route) {
             CollectionMain(navController)
         }
-
-        composable("liked-works") { LikedWorksScreen(navController) }
-        composable("collected-works") { CollectedWorksScreen(navController) }
-        composable("my-works") { MyWorksScreen(navController) }
+        composable("submit-work") {
+            SubmitWorkScreen(navController)
+        }
+        composable("collection-detail/{workId}") { backStackEntry ->
+            val workIdString = backStackEntry.arguments?.getString("workId")
+            val workId = try {
+                workIdString?.let { UUID(it) }
+            } catch (e: IllegalArgumentException) {
+                null
+            }
+            if (workId != null) {
+                CollectionDetailScreen(workId = workId, navController = navController)
+            } else {
+                ErrorScreen(
+                    message = "无效的 Work ID：$workIdString",
+                    navController = navController
+                )
+            }
+        }
+        composable("user-work-status") {
+            MyWorksScreen(navController)
+        }
+        composable("liked-works") {
+            LikedWorksScreen(navController)
+        }
+        composable("collected-works") {
+            CollectedWorksScreen(navController)
+        }
+        composable("my-works") {
+            MyWorksScreen(navController)
+        }
 
         // 消息列表的相关界面
         composable(BottomNavItem.Notification.route) {
@@ -145,6 +168,10 @@ fun NavigationHost(navController: NavHostController) {
         // 账户管理页面
         composable("setting-account") {
             AccountManagerScreen(navController = navController)
+        }
+        // 个人主页页面
+        composable("setting-ourselves") {
+            UserProfileScreen(navController = navController)
         }
     }
 }

@@ -1,4 +1,4 @@
-package com.example.physicistscard.android.navigation
+package com.example.physicistscard.android.navigation.whole
 
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Collections

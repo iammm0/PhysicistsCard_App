@@ -12,6 +12,7 @@ import androidx.compose.material.icons.outlined.Email
 import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.outlined.ManageAccounts
 import androidx.compose.material.icons.outlined.Menu
+import androidx.compose.material.icons.outlined.PersonOutline
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -29,6 +30,7 @@ import com.example.physicistscard.android.settings.components.SettingItem
 @Composable
 fun SettingMain(navController: NavHostController) {
     val settings = listOf(
+        Setting("个人主页", Icons.Outlined.PersonOutline, "一展风采", "setting-ourselves"),
         Setting("账户管理", Icons.Outlined.ManageAccounts, "就猜到你记性不好咯", "setting-account"),
         Setting("语言", Icons.Outlined.Menu, "我就知道老外会找这个", "setting-language"),
         Setting("反馈", Icons.Outlined.Email, "与官方开发者取得联系", "setting-feedback"),

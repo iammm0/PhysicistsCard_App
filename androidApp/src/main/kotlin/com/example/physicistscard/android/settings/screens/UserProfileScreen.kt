@@ -24,7 +24,7 @@ fun UserProfileScreen(navController: NavController) {
                     .padding(16.dp)
                     .padding(paddingValues) // 应用 Scaffold 提供的 paddingValues
             ) {
-                Text("PhysicistsCard 是一个致力于...")
+                Text("在这里编写个人主页")
                 Spacer(modifier = Modifier.height(8.dp))
                 // 其他关于 PhysCard 的信息...
             }
