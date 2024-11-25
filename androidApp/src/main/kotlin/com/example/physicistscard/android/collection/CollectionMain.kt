@@ -38,64 +38,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
-import com.example.physicistscard.android.R
 import com.example.physicistscard.android.collection.components.CollectMenu
 import com.example.physicistscard.android.collection.components.CollectionItemCard
 import com.example.physicistscard.android.data.exampleWorks
-
-data class CollectionItem(
-    val id: String,             // 作品的唯一ID
-    val title: String,          // 作品标题
-    val description: String,    // 作品描述
-    val imageUrl: Int,          // 作品图片资源ID (可根据需要修改为String)
-    val likes: Int,             // 点赞数量
-    val commentsCount: Int      // 评论数量
-)
-
-// 假设我们有一些征集的作品数据
-val collectionItems = listOf(
-    CollectionItem(
-        id = "1",
-        title = "Albert Enstein",
-        description = "爱因斯坦卡牌",
-        imageUrl = R.drawable.enstein,
-        likes = 150,
-        commentsCount = 20
-    ),
-    CollectionItem(
-        id = "2",
-        title = "Issac Newton",
-        description = "牛顿卡牌",
-        imageUrl = R.drawable.newton,
-        likes = 200,
-        commentsCount = 50
-    ),
-    CollectionItem(
-        id = "3",
-        title = "Bohr",
-        description = "玻尔卡牌",
-        imageUrl = R.drawable.bohr,
-        likes = 200,
-        commentsCount = 50
-    ),
-    CollectionItem(
-        id = "5",
-        title = "Fourier",
-        description = "菲涅尔卡牌",
-        imageUrl = R.drawable.fourier,
-        likes = 200,
-        commentsCount = 50
-    ),
-    CollectionItem(
-        id = "6",
-        title = "Curie",
-        description = "居里卡牌",
-        imageUrl = R.drawable.curie,
-        likes = 200,
-        commentsCount = 50
-    ),
-    // 添加更多作品...
-)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
@@ -114,7 +59,6 @@ fun CollectionMain(navController: NavHostController) {
                         Text(text = "征集", style = MaterialTheme.typography.titleLarge)
                         Spacer(Modifier.width(16.dp))
 
-                        // 搜索框
                         OutlinedTextField(
                             value = searchText,
                             onValueChange = { searchText = it },
@@ -135,8 +79,10 @@ fun CollectionMain(navController: NavHostController) {
                             },
                             modifier = Modifier
                                 .width(188.dp)
-                                .height(30.dp)
+                                .height(40.dp)
                         )
+
+                        Spacer(Modifier.weight(1f))
 
                         // 个人中心按钮，点击后弹出下拉菜单
                         CollectMenu(navController = navController)
@@ -150,38 +96,14 @@ fun CollectionMain(navController: NavHostController) {
             )
         },
         content = {  paddingValues ->
-
-            // 调用 CollectionDisplayPage 展示征集作品列表
-            // 使用LazyColumn展示征集作品列表
-            // LazyColumn(
-            //     modifier = Modifier
-            //         .fillMaxSize()
-            //         .padding(10.dp)
-            //         .padding(bottom = 56.dp) // 增加额外的底部间距，避免内容被底部导航栏遮挡
-            //         .padding(paddingValues) // 尽量使用系统提供的 padding
-            // ) {
-            //     items(collectionItems) { item ->
-            //         CollectionItemCard(
-            //             item = item,
-            //             onClick = {
-            //                 navController.navigate("collection-detail/${item.id}")
-            //             }
-            //         )
-            //         Spacer(modifier = Modifier.height(16.dp))
-            //     }
-            // }
-
             // 使用 LazyVerticalGrid 展示征集作品列表
             LazyVerticalGrid(
-                columns = GridCells.Fixed(2), // 设置为两列布局
+                columns = GridCells.Fixed(2),
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(2.dp)
-                    .padding(bottom = 72.dp) // 增加额外的底部间距，避免内容被底部导航栏遮挡
-                    .padding(paddingValues), // 使用系统提供的 padding
-                verticalArrangement = Arrangement.spacedBy(10.dp), // 设置垂直间距
-                horizontalArrangement = Arrangement.spacedBy(10.dp), // 设置水平间距
-                contentPadding = PaddingValues(6.dp) // 设置内容的内边距
+                    .padding(paddingValues).padding(bottom = 84.dp),
+                verticalArrangement = Arrangement.spacedBy(1.dp),
+                horizontalArrangement = Arrangement.spacedBy(12.dp),
             ) {
                 items(exampleWorks) { work ->
                     CollectionItemCard(

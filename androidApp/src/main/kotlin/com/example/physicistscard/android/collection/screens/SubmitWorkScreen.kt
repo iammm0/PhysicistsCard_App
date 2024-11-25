@@ -8,7 +8,18 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -16,8 +27,29 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ChevronLeft
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.AssistChip
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilterChip
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
@@ -28,6 +60,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.navigation.NavController
 import coil.compose.rememberAsyncImagePainter
+import com.example.physicistscard.android.collection.components.TagInputArea
 import com.example.physicistscard.android.themes.PhysicistsCardTheme
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
@@ -37,18 +70,17 @@ fun SubmitWorkScreen(navController: NavController) {
     var title by remember { mutableStateOf("") }
     var description by remember { mutableStateOf("") }
 
-    val categories = listOf(
-        "理论物理", "实验物理", "天体物理", "粒子物理", "核物理", "等离子体物理",
-        "凝聚态物理", "应用物理", "量子物理", "光学物理"
+    val predefinedCategories = listOf(
+        "粒子物理学", "核物理学", "等离子体物理学", "凝聚态物理学", "应用物理学",
+        "量子信息科学", "光学", "理论物理学", "实验物理学", "天体物理学",
+        "软物质物理", "生物物理学", "流体物理学", "统计物理学", "复杂系统"
     )
 
-    val fields = listOf(
-        "量子力学", "相对论", "热力学", "经典力学", "电磁学", "统计力学",
-        "固体物理", "宇宙学", "原子物理", "分子物理", "超导", "等离子体物理学"
-    )
+    var tags by remember { mutableStateOf(listOf<String>()) }
+
+    var showSubmitDialog by remember { mutableStateOf(false) }
 
     var selectedCategories by remember { mutableStateOf(setOf<String>()) }
-    var selectedFields by remember { mutableStateOf(setOf<String>()) }
 
     var uploadedMedia by remember { mutableStateOf<List<Uri>>(emptyList()) }
     var showDialog by remember { mutableStateOf(false) }
@@ -89,6 +121,7 @@ fun SubmitWorkScreen(navController: NavController) {
                     verticalArrangement = Arrangement.spacedBy(16.dp),
                     contentPadding = PaddingValues(16.dp)
                 ) {
+
                     // 作品标题
                     item {
                         OutlinedTextField(
@@ -101,13 +134,17 @@ fun SubmitWorkScreen(navController: NavController) {
                             shape = RoundedCornerShape(8.dp),
                             colors = OutlinedTextFieldDefaults.colors(
                                 focusedBorderColor = MaterialTheme.colorScheme.secondary,
-                                unfocusedBorderColor = MaterialTheme.colorScheme.onSecondary,
+                                unfocusedBorderColor = MaterialTheme.colorScheme.onPrimary,
                                 focusedTextColor = MaterialTheme.colorScheme.secondary,
                                 unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
                                 disabledTextColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f),
                                 errorTextColor = MaterialTheme.colorScheme.error,
                             )
                         )
+                    }
+
+                    item {
+                        Spacer(modifier = Modifier.height(4.dp))
                     }
 
                     // 作品描述
@@ -123,7 +160,7 @@ fun SubmitWorkScreen(navController: NavController) {
                             shape = RoundedCornerShape(8.dp),
                             colors = OutlinedTextFieldDefaults.colors(
                                 focusedBorderColor = MaterialTheme.colorScheme.secondary,
-                                unfocusedBorderColor = MaterialTheme.colorScheme.onSecondary,
+                                unfocusedBorderColor = MaterialTheme.colorScheme.onPrimary,
                                 focusedTextColor = MaterialTheme.colorScheme.onPrimary,
                                 unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
                                 disabledTextColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f),
@@ -134,71 +171,86 @@ fun SubmitWorkScreen(navController: NavController) {
                         )
                     }
 
+                    item {
+                        Spacer(modifier = Modifier.height(4.dp))
+                    }
+
+                    item {
+                        Text("标签", style = MaterialTheme.typography.titleMedium)
+                        Spacer(modifier = Modifier.height(8.dp))
+                        TagInputArea(tags = tags, onTagsChange = { updatedTags ->
+                            tags = updatedTags
+                        })
+                    }
+
+                    // 标签输入
+                    // item {
+                    //     OutlinedTextField(
+                    //         value = tagsInput,
+                    //         onValueChange = { input ->
+                    //             tagsInput = input
+                    //             parsedTags = parseTags(input)
+                    //         },
+                    //         label = { Text("输入标签，使用 # 标识", style = MaterialTheme.typography.bodyMedium) },
+                    //         modifier = Modifier
+                    //             .fillMaxWidth()
+                    //             .padding(horizontal = 8.dp)
+                    //             .height(180.dp),
+                    //         colors = OutlinedTextFieldDefaults.colors(
+                    //             focusedBorderColor = MaterialTheme.colorScheme.secondary,
+                    //             unfocusedBorderColor = MaterialTheme.colorScheme.onPrimary,
+                    //             focusedTextColor = MaterialTheme.colorScheme.onPrimary,
+                    //             unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
+                    //             disabledTextColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f),
+                    //             errorTextColor = MaterialTheme.colorScheme.error,
+                    //         ),
+                    //     )
+                    //     Spacer(modifier = Modifier.height(8.dp))
+                    //     FlowRow(
+                    //         modifier = Modifier.fillMaxWidth(),
+                    //         horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    //         verticalArrangement = Arrangement.spacedBy(8.dp)
+                    //     ) {
+                    //         parsedTags.forEach { tag ->
+                    //             AssistChip(
+                    //                 onClick = { /* 可添加点击逻辑 */ },
+                    //                 label = { Text(tag) }
+                    //             )
+                    //         }
+                    //     }
+                    // }
+
                     // 类别选择
                     item {
-                        Text(
-                            "作品类别",
-                            style = MaterialTheme.typography.titleMedium.copy(
-                                color = MaterialTheme.colorScheme.onSurface,
-                                fontSize = 18.sp  // 更加显著的小标题风格
-                            ),
-                            modifier = Modifier.padding(start = 8.dp, top = 16.dp, bottom = 8.dp)
-                        )
+                        Text("作品类别", style = MaterialTheme.typography.titleMedium)
+                        Spacer(modifier = Modifier.height(8.dp))
                         FlowRow(
-                            modifier = Modifier.fillMaxWidth().padding(8.dp),
-                            horizontalArrangement = Arrangement.spacedBy(16.dp), // 每个元素之间的水平方向间隔
-                            verticalArrangement = Arrangement.spacedBy(8.dp),    // 每行之间的垂直方向间隔
-                            maxItemsInEachRow = 3 // 每行最多显示 3 个元素
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            verticalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
-                            categories.forEach { category ->
+                            predefinedCategories.forEach { category ->
                                 FilterChip(
                                     selected = selectedCategories.contains(category),
                                     onClick = {
-                                        selectedCategories = if (selectedCategories.contains(category)) {
-                                            selectedCategories - category
+                                        if (selectedCategories.contains(category)) {
+                                            selectedCategories = selectedCategories - category
+                                        } else if (selectedCategories.size < 3) {
+                                            selectedCategories = selectedCategories + category
                                         } else {
-                                            selectedCategories + category
+                                            Toast.makeText(context, "最多选择 3 个类别", Toast.LENGTH_SHORT).show()
                                         }
                                     },
-                                    label = { Text(category) },
-                                    modifier = Modifier.padding(4.dp)
+                                    label = { Text(category) }
                                 )
                             }
                         }
                     }
 
-                    // 物理学领域选择
                     item {
-                        Text(
-                            "物理学领域",
-                            style = MaterialTheme.typography.titleMedium.copy(
-                                color = MaterialTheme.colorScheme.onSurface,
-                                fontSize = 18.sp  // 更加显著的小标题风格
-                            ),
-                            modifier = Modifier.padding(start = 8.dp, top = 16.dp, bottom = 8.dp)
-                        )
-                        FlowRow(
-                            modifier = Modifier.fillMaxWidth().padding(8.dp),
-                            horizontalArrangement = Arrangement.spacedBy(16.dp), // 每个元素之间的水平方向间隔
-                            verticalArrangement = Arrangement.spacedBy(8.dp),    // 每行之间的垂直方向间隔
-                            maxItemsInEachRow = 3 // 每行最多显示 3 个元素
-                        ) {
-                            fields.forEach { field ->
-                                FilterChip(
-                                    selected = selectedFields.contains(field),
-                                    onClick = {
-                                        selectedFields = if (selectedFields.contains(field)) {
-                                            selectedFields - field
-                                        } else {
-                                            selectedFields + field
-                                        }
-                                    },
-                                    label = { Text(field) },
-                                    modifier = Modifier.padding(4.dp)
-                                )
-                            }
-                        }
+                        Spacer(modifier = Modifier.height(8.dp))
                     }
+
 
                     // 上传区域
                     item {
@@ -359,7 +411,8 @@ fun SubmitWorkScreen(navController: NavController) {
                         Button(
                             onClick = {
                                 // 执行提交作品逻辑，比如网络请求将数据上传
-                                navController.popBackStack()
+                                // navController.popBackStack()
+                                showSubmitDialog = true
                             },
                             modifier = Modifier.fillMaxWidth(),
                             shape = MaterialTheme.shapes.medium,
@@ -371,10 +424,44 @@ fun SubmitWorkScreen(navController: NavController) {
                             Text("提交作品", style = MaterialTheme.typography.titleMedium)
                         }
                     }
+
                 }
             }
         )
+        // 提交确认对话框
+        if (showSubmitDialog) {
+            AlertDialog(
+                onDismissRequest = { showSubmitDialog = false },
+                title = { Text("确认提交") },
+                text = { Text("您确认要提交此作品吗？提交后将进入审核状态。") },
+                confirmButton = {
+                    TextButton(
+                        onClick = {
+                            showSubmitDialog = false
+                            Toast.makeText(context, "您的作品已进入审核状态", Toast.LENGTH_SHORT).show()
+                            navController.popBackStack()
+                        }
+                    ) {
+                        Text("确认", style = MaterialTheme.typography.bodyMedium)
+                    }
+                },
+                dismissButton = {
+                    TextButton(onClick = { showSubmitDialog = false }) {
+                        Text("取消", style = MaterialTheme.typography.bodyMedium)
+                    }
+                }
+            )
+        }
     }
+}
+
+// 解析标签的方法
+private fun parseTags(input: String): List<String> {
+    return input.split(" ")
+        .filter { it.startsWith("#") && it.length <= 31 }
+        .map { it.trim('#') }
+        .distinct()
+        .take(10) // 限制最多 10 个标签
 }
 
 // 判断是否是图片 URI

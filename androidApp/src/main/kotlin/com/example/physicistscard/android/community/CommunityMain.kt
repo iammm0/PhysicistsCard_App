@@ -35,41 +35,18 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
-import com.example.physicistscard.android.R
+import androidx.navigation.compose.rememberNavController
 import com.example.physicistscard.android.community.components.CommunityMenu
-import com.example.physicistscard.android.community.components.Post
-import com.example.physicistscard.android.community.components.PostItem
+import com.example.physicistscard.android.community.components.PostItemCard
+import com.example.physicistscard.android.data.examplePosts
 
 @OptIn(ExperimentalMaterial3Api::class)
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
 fun CommunityMain(navController: NavHostController) {
-
-    val posts = listOf(
-        Post(
-            postId = "1",
-            title = "物理学革命：从牛顿到爱因斯坦",
-            description = "这是对物理学历史的深入探讨，从经典力学到相对论的演变过程。",
-            imageUrl = R.drawable.newton,  // 替换为实际的图片资源
-            likeCount = 120,
-            commentCount = 45,
-            favoriteCount = 80,
-            shareCount = 10
-        ),
-        Post(
-            postId = "2",
-            title = "量子物理的基础",
-            description = "量子物理学的基本概念和它如何改变我们的世界观。",
-            imageUrl = R.drawable.bohr,  // 替换为实际的图片资源
-            likeCount = 100,
-            commentCount = 30,
-            favoriteCount = 60,
-            shareCount = 15
-        )
-        // 其他推送数据...
-    )
 
     var searchText by remember { mutableStateOf("") }
 
@@ -126,12 +103,12 @@ fun CommunityMain(navController: NavHostController) {
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(paddingValues)
-                    .padding(bottom = 56.dp),
-                contentPadding = PaddingValues(10.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
+                    .padding(bottom = 84.dp),
+                contentPadding = PaddingValues(0.dp),
+                verticalArrangement = Arrangement.spacedBy(0.dp)
             ) {
-                items(posts) { post ->
-                    PostItem(
+                items(examplePosts) { post ->
+                    PostItemCard(
                         post = post,
                         onClick = {
                             navController.navigate("postDetail/${post.postId}")
@@ -141,4 +118,11 @@ fun CommunityMain(navController: NavHostController) {
             }
         }
     )
+}
+
+@Preview(showBackground = true)
+@Composable
+fun CommunityMainPreview() {
+    val navController = rememberNavController()
+    CommunityMain(navController)
 }

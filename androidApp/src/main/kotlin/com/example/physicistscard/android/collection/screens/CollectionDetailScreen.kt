@@ -1,7 +1,6 @@
 package com.example.physicistscard.android.collection.screens
 
 import android.annotation.SuppressLint
-import android.widget.Space
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -14,7 +13,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
@@ -37,29 +35,24 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
-import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.ImeAction
-import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.physicistscard.android.collection.components.AttachmentItem
-import com.example.physicistscard.android.collection.components.CollectionInteractionButtons
-import com.example.physicistscard.android.commonComponents.TagsDisplay
-import com.example.physicistscard.android.commonComponents.comment.Comment
-import com.example.physicistscard.android.commonComponents.comment.CommentsSection
+import com.example.physicistscard.android.collection.components.CommentsSection
+import com.example.physicistscard.android.commonComponents.tag.TagsDisplay
 import com.example.physicistscard.android.data.exampleAttachments
 import com.example.physicistscard.transmissionModels.collection.Attachment
-import com.example.physicistscard.transmissionModels.collection.AttachmentType
 import com.example.physicistscard.transmissionModels.collection.AttachmentType.FILE
+import com.example.physicistscard.transmissionModels.collection.Comment
+import com.example.physicistscard.transmissionModels.collection.CommentReply
 import com.example.physicistscard.transmissionModels.collection.Work
 import kotlinx.coroutines.launch
 import kotlinx.datetime.Clock
@@ -80,41 +73,15 @@ fun CollectionDetailScreen(
     workId: UUID,
     navController: NavController
 ) {
-    // 获取该 itemId 对应的作品详细信息
+    // 获取作品详细信息
     val workItem = getWorkItemById(workId)
 
-    val topBarVisible = remember { mutableStateOf(true) }
-    val bottomBarVisible = remember { mutableStateOf(true) }
-    var commentText by remember { mutableStateOf(TextFieldValue("")) }
+    // 评论状态
+    val comments = remember { mutableStateOf(getCommentsByWorkId(workId)) }
+    var commentText by remember { mutableStateOf("") }
 
     val scope = rememberCoroutineScope()
-    val bottomSheetState = rememberModalBottomSheetState(
-        skipPartiallyExpanded = false,
-        confirmValueChange = { true }
-    )
-
-    // 控制滑动行为来动态显示/隐藏 TopBar 和 BottomBar
-    val scrollState = rememberLazyListState()
-
-    // 评论列表的数据和状态
-    val comments = remember { mutableStateOf(getInitialComments()) }
-
-    // 根据滑动状态控制 TopBar 和 BottomBar 的显示隐藏
-    LaunchedEffect(scrollState) {
-        snapshotFlow { scrollState.firstVisibleItemScrollOffset }.collect { offset ->
-            if (offset > 0) {
-                launch {
-                    topBarVisible.value = false
-                    bottomBarVisible.value = false
-                }
-            } else {
-                launch {
-                    topBarVisible.value = true
-                    bottomBarVisible.value = true
-                }
-            }
-        }
-    }
+    val bottomSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = false)
 
     Scaffold(
         topBar = {
@@ -124,209 +91,163 @@ fun CollectionDetailScreen(
                     IconButton(onClick = { navController.popBackStack() }) {
                         Icon(Icons.Default.ChevronLeft, contentDescription = "返回")
                     }
-                },
-                actions = {
-                    CollectionInteractionButtons(navController = navController)
                 }
             )
         },
-
         bottomBar = {
-            // 正常状态的 BottomBar
+            // 底部评论输入框
             BottomAppBar(
-                modifier = Modifier.fillMaxWidth(),
                 containerColor = MaterialTheme.colorScheme.surface,
                 contentPadding = PaddingValues(horizontal = 16.dp)
             ) {
-                // 评论输入框位于底部弹窗底部
-                Row(modifier = Modifier.fillMaxWidth().padding(top = 16.dp), verticalAlignment = Alignment.CenterVertically) {
-                    // 评论按钮，点击后弹出评论区
-                    IconButton(onClick = {
-                        scope.launch {
-                            bottomSheetState.show()
-                        }
-                    }) {
-                        Icon(Icons.Rounded.CommentBank, contentDescription = "评论", tint = MaterialTheme.colorScheme.onPrimary)
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    // 打开评论区按钮
+                    IconButton(onClick = { scope.launch { bottomSheetState.show() } }) {
+                        Icon(Icons.Rounded.CommentBank, contentDescription = "评论")
                     }
-                    Spacer(modifier = Modifier.width(2.dp))
-
+                    Spacer(modifier = Modifier.width(8.dp))
                     OutlinedTextField(
                         value = commentText,
                         onValueChange = { commentText = it },
-                        placeholder = { Text(text = "写下评论...", fontSize = 12.sp) },
+                        placeholder = { Text("写下评论...") },
+                        modifier = Modifier
+                            .weight(1f)
+                            .height(56.dp),
                         singleLine = true,
-                        shape = MaterialTheme.shapes.medium,
-                        modifier = Modifier.weight(1f).height(56.dp),
-                        keyboardOptions = KeyboardOptions.Default.copy(
-                            imeAction = ImeAction.Send
-                        ),
-                        keyboardActions = KeyboardActions(
-                            onSend = {
-                                // 处理发送评论的逻辑
-                                println("发送的评论: \${commentText.text}")
-                                commentText = TextFieldValue("") // 清空输入框
-                            }
-                        ),
                         colors = OutlinedTextFieldDefaults.colors(
-                            focusedBorderColor = MaterialTheme.colorScheme.primary,
-                            unfocusedBorderColor = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
+                            focusedBorderColor = MaterialTheme.colorScheme.primary
+                        ),
+                        keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Send),
+                        keyboardActions = KeyboardActions(onSend = {
+                            // 发送评论
+                            if (commentText.isNotEmpty()) {
+                                comments.value += Comment(
+                                    commentId = comments.value.size + 1,
+                                    userId = "当前用户",
+                                    workId = workId,
+                                    content = commentText,
+                                    commentDate = Clock.System.now(),
+                                    replies = emptyList()
+                                )
+                                commentText = ""
+                            }
+                        })
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     Button(
                         onClick = {
-                            // 处理发送评论的逻辑
-                            println("发送的评论: \${commentText.text}")
-                            commentText = TextFieldValue("") // 清空输入框
+                            // 提交评论逻辑
+                            if (commentText.isNotEmpty()) {
+                                comments.value += Comment(
+                                    commentId = comments.value.size + 1,
+                                    userId = "当前用户",
+                                    workId = workId,
+                                    content = commentText,
+                                    commentDate = Clock.System.now(),
+                                    replies = emptyList()
+                                )
+                                commentText = ""
+                            }
                         },
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = MaterialTheme.colorScheme.secondary
-                        ),
+                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondary)
                     ) {
-                        Text(text = "发送", color = MaterialTheme.colorScheme.onSecondary)
+                        Text("发送")
                     }
                 }
             }
         },
-
         content = { paddingValues ->
             LazyColumn(
-                modifier = Modifier
-                    .padding(16.dp)
-                    .padding(paddingValues),
-                verticalArrangement = Arrangement.spacedBy(8.dp),
-                contentPadding = PaddingValues(bottom = 16.dp) // 增加底部间距，防止被底部栏遮挡
+                modifier = Modifier.padding(16.dp).padding(paddingValues),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                // 作者和提交日期卡片
+                // 作者和提交日期
                 item {
-                    Card(
-                        modifier = Modifier.fillMaxWidth(),
-                        shape = MaterialTheme.shapes.medium,
-                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
-                    ) {
-                        Column(modifier = Modifier.padding(16.dp)) {
-                            Text(
-                                text = workItem.authorId,
-                                style = MaterialTheme.typography.titleMedium,
-                                color = MaterialTheme.colorScheme.secondary,
-                                modifier = Modifier.padding(bottom = 8.dp)
-                            )
-                            Text(
-                                text = "提交日期: ${formatInstantToSeconds(workItem.submitDate)}",
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onSurface
-                            )
-                        }
-                    }
+                    DetailCard(
+                        title = workItem.authorId,
+                        subtitle = "提交日期: ${formatInstantToSeconds(workItem.submitDate)}"
+                    )
                 }
-
-                // 标签展示卡片
+                // 标签展示
                 item {
-                    Card(
-                        modifier = Modifier.fillMaxWidth(),
-                        shape = MaterialTheme.shapes.medium,
-                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
-                    ) {
-                        Column(modifier = Modifier.padding(16.dp)) {
-                            Text(
-                                text = "标签",
-                                style = MaterialTheme.typography.titleMedium,
-                                color = MaterialTheme.colorScheme.onSurface,
-                                modifier = Modifier.padding(bottom = 8.dp)
-                            )
-                            TagsDisplay(tags = workItem.tags)
-                        }
-                    }
+                    DetailCard(
+                        title = "标签",
+                        content = { TagsDisplay(tags = workItem.tags) }
+                    )
                 }
-
+                // 作品描述
                 item {
-                    Spacer(modifier = Modifier.height(8.dp))
+                    DetailCard(
+                        title = workItem.title,
+                        content = { Text(workItem.description) }
+                    )
                 }
-
-                // 其余内容卡片
+                // 附件展示
                 item {
-                    Card(
-                        modifier = Modifier.fillMaxWidth(),
-                        shape = MaterialTheme.shapes.medium,
-                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
-                    ) {
-                        Column(modifier = Modifier.padding(16.dp)) {
-
-                            Text(
-                                text = workItem.title,
-                                style = MaterialTheme.typography.headlineMedium,
-                                color = MaterialTheme.colorScheme.onSurface,
-                                modifier = Modifier.padding(bottom = 16.dp)
-                            )
-                            Spacer(modifier = Modifier.height(4.dp))
-                            Text(
-                                text = workItem.description,
-                                style = MaterialTheme.typography.bodyLarge,
-                                color = MaterialTheme.colorScheme.onSurface
-                            )
-                        }
-                    }
-                }
-
-                // 作品附件预览卡片
-                item {
-                    Card(
-                        modifier = Modifier.fillMaxWidth(),
-                        shape = MaterialTheme.shapes.medium,
-                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
-                    ) {
-                        Column(modifier = Modifier.padding(16.dp)) {
-                            Text(
-                                text = "作品附件",
-                                style = MaterialTheme.typography.titleMedium,
-                                color = MaterialTheme.colorScheme.onSurface,
-                                modifier = Modifier.padding(bottom = 8.dp)
-                            )
-                            LazyRow(
-                                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                                modifier = Modifier.fillMaxWidth()
-                            ) {
+                    DetailCard(
+                        title = "作品附件",
+                        content = {
+                            LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                                 items(workItem.attachment) { attachment ->
                                     AttachmentItem(attachment)
                                 }
                             }
                         }
-                    }
+                    )
                 }
             }
         }
     )
 
-    // 评论区的底部弹窗
+    // 评论区底部弹窗
     if (bottomSheetState.isVisible) {
         ModalBottomSheet(
-            onDismissRequest = {
-                scope.launch {
-                    bottomSheetState.hide()
-                }
-            },
             sheetState = bottomSheetState,
+            onDismissRequest = { scope.launch { bottomSheetState.hide() } }
         ) {
-            Column(modifier = Modifier.padding(5.dp)) {
-                CommentsSection(
-                    comments = comments.value,
-                    onReply = { commentId, content ->
-                        comments.value = comments.value.map { comment ->
-                            if (comment.id == commentId) {
-                                comment.copy(
-                                    replies = comment.replies + Comment(
-                                        id = comment.replies.size + 1,
-                                        userName = "当前用户", // 替换为实际的用户信息
-                                        content = content,
-                                        timestamp = "刚刚"
-                                    )
-                                )
-                            } else {
-                                comment
-                            }
-                        }
+            CommentsSection(
+                comments = comments.value,
+                onReply = { commentId, content ->
+                    comments.value = comments.value.map {
+                        if (it.commentId == commentId) {
+                            it.copy(replies = it.replies + CommentReply(
+                                replyId = it.replies.size + 1,
+                                commentId = it.commentId,
+                                userId = "当前用户",
+                                content = content,
+                                replyDate = Clock.System.now()
+                            ))
+                        } else it
                     }
-                )
+                }
+            )
+        }
+    }
+}
+
+// 卡片组件
+@Composable
+fun DetailCard(
+    title: String,
+    subtitle: String? = null,
+    content: @Composable (() -> Unit)? = null
+) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = MaterialTheme.shapes.medium,
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
+    ) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            Text(title, style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurface)
+            subtitle?.let {
+                Text(it, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            }
+            content?.let {
+                Spacer(modifier = Modifier.height(8.dp))
+                it()
             }
         }
     }
@@ -342,6 +263,63 @@ fun formatInstantToSeconds(instant: Instant, timeZone: TimeZone = TimeZone.curre
     val second = localDateTime.second
     return "%04d-%02d-%02d %02d:%02d:%02d".format(year, month, day, hour, minute, second)
 }
+
+fun getCommentsByWorkId(workId: UUID): List<Comment> {
+    // 模拟评论数据
+    val exampleComments = listOf(
+        Comment(
+            commentId = 1,
+            userId = "理天帝",
+            workId = UUID("68af0708-40c5-4b6f-b78a-91d98d9561bf"),
+            content = "这篇文章真的很好，让我对量子力学有了更深的了解！",
+            commentDate = Clock.System.now().minus(1, DateTimeUnit.DAY, TimeZone.currentSystemDefault()),
+            replies = listOf(
+                CommentReply(
+                    replyId = 101,
+                    commentId = 1,
+                    userId = "量子大牛",
+                    content = "感谢支持，我会继续努力！",
+                    replyDate = Clock.System.now().minus(12, DateTimeUnit.HOUR, TimeZone.currentSystemDefault())
+                ),
+                CommentReply(
+                    replyId = 102,
+                    commentId = 1,
+                    userId = "学术新人",
+                    content = "请问能否推荐一些入门书籍？",
+                    replyDate = Clock.System.now().minus(8, DateTimeUnit.HOUR, TimeZone.currentSystemDefault())
+                )
+            )
+        ),
+        Comment(
+            commentId = 2,
+            userId = "我是明明啊",
+            workId = UUID("3f9c7a1d-19e0-4e97-aada-5f78e6f2920e"),
+            content = "人工智能的学习指南太实用了，非常感谢作者的分享！",
+            commentDate = Clock.System.now().minus(2, DateTimeUnit.DAY, TimeZone.currentSystemDefault()),
+            replies = listOf(
+                CommentReply(
+                    replyId = 103,
+                    commentId = 2,
+                    userId = "AI工程师",
+                    content = "很高兴这篇文章对你有帮助！",
+                    replyDate = Clock.System.now().minus(1, DateTimeUnit.DAY, TimeZone.currentSystemDefault())
+                )
+            )
+        ),
+        Comment(
+            commentId = 3,
+            userId = "子洋哥哥",
+            workId = UUID("B8370B6E-5546-4CB2-AF70-E2C81D2D2C66"),
+            content = "新能源的技术探索很棒，希望能有更多关于多能互补的文章！",
+            commentDate = Clock.System.now().minus(3, DateTimeUnit.DAY, TimeZone.currentSystemDefault()),
+            replies = emptyList()
+        )
+    )
+
+    // 根据 workId 过滤出评论数据
+    return exampleComments.filter { it.workId == workId }
+}
+
 
 
 fun getWorkItemById(workId: UUID): Work {
@@ -414,7 +392,7 @@ fun getWorkItemById(workId: UUID): Work {
                     attachmentUrl = "https://example.com/研究论文.pdf",
                     attachmentName = "脑机接口论文",
                     attachmentSize = 20480L,
-                    attachmentType = AttachmentType.FILE,
+                    attachmentType = FILE,
                     uploadAt = Clock.System.now().minus(3, DateTimeUnit.DAY, TimeZone.currentSystemDefault())
                 )
             ),
@@ -435,7 +413,7 @@ fun getWorkItemById(workId: UUID): Work {
                     attachmentUrl = "https://example.com/3D模型.zip",
                     attachmentName = "打印模型文件",
                     attachmentSize = 51200L,
-                    attachmentType = AttachmentType.FILE,
+                    attachmentType = FILE,
                     uploadAt = Clock.System.now().minus(2, DateTimeUnit.DAY, TimeZone.currentSystemDefault())
                 )
             ),
@@ -456,7 +434,7 @@ fun getWorkItemById(workId: UUID): Work {
                     attachmentUrl = "https://example.com/热控设计图.pdf",
                     attachmentName = "热控设计图",
                     attachmentSize = 30720L,
-                    attachmentType = AttachmentType.FILE,
+                    attachmentType = FILE,
                     uploadAt = Clock.System.now().minus(5, DateTimeUnit.DAY, TimeZone.currentSystemDefault())
                 )
             ),
@@ -477,7 +455,7 @@ fun getWorkItemById(workId: UUID): Work {
                     attachmentUrl = "https://example.com/生态报告.pdf",
                     attachmentName = "生态恢复报告",
                     attachmentSize = 10240L,
-                    attachmentType = AttachmentType.FILE,
+                    attachmentType = FILE,
                     uploadAt = Clock.System.now().minus(4, DateTimeUnit.DAY, TimeZone.currentSystemDefault())
                 )
             ),
@@ -498,7 +476,7 @@ fun getWorkItemById(workId: UUID): Work {
                     attachmentUrl = "https://example.com/代码示例.zip",
                     attachmentName = "自然语言处理代码",
                     attachmentSize = 20480L,
-                    attachmentType = AttachmentType.FILE,
+                    attachmentType = FILE,
                     uploadAt = Clock.System.now().minus(6, DateTimeUnit.DAY, TimeZone.currentSystemDefault())
                 )
             ),
@@ -507,14 +485,4 @@ fun getWorkItemById(workId: UUID): Work {
         )
     )
     return works.find { it.workId == workId } ?: throw IllegalArgumentException("Work not found with id: $workId")
-}
-
-// 获取初始评论列表数据
-fun getInitialComments(): List<Comment> {
-    return listOf(
-        Comment(1, "User1", "这是第一个评论", "2024-11-02", replies = listOf(
-            Comment(2, "User2", "这是一个回复", "2024-11-02")
-        )),
-        Comment(3, "User3", "这是第二个评论", "2024-11-02")
-    )
 }

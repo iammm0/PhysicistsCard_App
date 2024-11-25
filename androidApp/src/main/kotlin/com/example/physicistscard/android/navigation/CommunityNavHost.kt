@@ -10,7 +10,9 @@ import com.example.physicistscard.android.community.screens.CollectedPostsScreen
 import com.example.physicistscard.android.community.screens.EditPostScreen
 import com.example.physicistscard.android.community.screens.LikedPostsScreen
 import com.example.physicistscard.android.community.screens.MyPostsScreen
+import com.example.physicistscard.android.error.ErrorScreen
 import com.example.physicistscard.android.navigation.whole.BottomNavItem
+import kotlinx.uuid.UUID
 
 @Composable
 fun CommunityNavHost() {
@@ -28,10 +30,19 @@ fun CommunityNavHost() {
 
         // 推送详情页面，接收postId参数
         composable("postDetail/{postId}") { backStackEntry ->
-            val postId = backStackEntry.arguments?.getString("postId")
+            val postIdString = backStackEntry.arguments?.getString("postId")
+            val postId = try {
+                postIdString?.let { UUID(it) } // 将字符串转换为 UUID
+            } catch (e: IllegalArgumentException) {
+                null // 如果转换失败，处理为 null
+            }
 
-            // 显示推送详情
-            PostDetailScreen(postId = postId, navController = navController)
+            if (postId != null) {
+                PostDetailScreen(postId = postId, navController = navController)
+            } else {
+                // 处理错误情况，例如显示错误页面
+                ErrorScreen(message = "Invalid Post ID")
+            }
         }
 
         composable("liked-posts") { LikedPostsScreen(navController) }

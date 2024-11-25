@@ -1,4 +1,4 @@
-package com.example.physicistscard.android.commonComponents
+package com.example.physicistscard.android.commonComponents.tag
 
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow

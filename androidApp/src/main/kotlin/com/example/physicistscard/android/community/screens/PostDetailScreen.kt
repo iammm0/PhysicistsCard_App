@@ -1,14 +1,15 @@
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
@@ -20,13 +21,14 @@ import androidx.compose.material.icons.rounded.Star
 import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
@@ -37,38 +39,42 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
-import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.physicistscard.android.R
-import com.example.physicistscard.android.commonComponents.comment.Comment
-import com.example.physicistscard.android.commonComponents.comment.CommentsSection
-import com.example.physicistscard.android.community.components.Post
+import com.example.physicistscard.android.collection.components.formatInstantToReadable
+import com.example.physicistscard.android.commonComponents.tag.TagsDisplay
+import com.example.physicistscard.android.community.components.CommunityCommentsSection
+import com.example.physicistscard.android.data.exampleUserComments
+import com.example.physicistscard.transmissionModels.community.content.ImageContent
+import com.example.physicistscard.transmissionModels.community.content.TextContent
+import com.example.physicistscard.transmissionModels.community.content.VideoContent
 import kotlinx.coroutines.launch
+import kotlinx.datetime.Clock
+import kotlinx.datetime.DateTimeUnit
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.minus
+import kotlinx.uuid.UUID
+import kotlinx.uuid.generateUUID
+import kotlin.random.Random
 
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PostDetailScreen(
-    postId: String?,
-    navController: NavController
+    postId: UUID,
+    navController: NavController,
 ) {
-    val post = com.example.physicistscard.android.navigation.whole.getPostById(postId)
+    val postItem = getPostById(postId)
 
-    var commentText by remember { mutableStateOf(TextFieldValue("")) }
-    val comments = remember { mutableStateOf(getInitialComments()) }
+    var commentText by remember { mutableStateOf("") }
+    val comments = remember { mutableStateOf(getPostComments(postId)) }
     val scope = rememberCoroutineScope()
-    val bottomSheetState = rememberModalBottomSheetState(
-        skipPartiallyExpanded = false,
-        confirmValueChange = { true }
-    )
+    val bottomSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = false)
 
     Scaffold(
         topBar = {
@@ -80,14 +86,13 @@ fun PostDetailScreen(
                     }
                 },
                 actions = {
-                    // 点赞、收藏按钮
-                    IconButton(onClick = { /* 处理点赞逻辑 */ }) {
-                        Icon(Icons.Outlined.ThumbUp, contentDescription = "点赞", tint = MaterialTheme.colorScheme.onPrimary)
+                    IconButton(onClick = { /* 点赞逻辑 */ }) {
+                        Icon(Icons.Outlined.ThumbUp, contentDescription = "点赞")
                     }
-                    IconButton(onClick = { /* 处理收藏逻辑 */ }) {
-                        Icon(Icons.Rounded.Star, contentDescription = "收藏", tint = MaterialTheme.colorScheme.onPrimary)
+                    IconButton(onClick = { /* 收藏逻辑 */ }) {
+                        Icon(Icons.Rounded.Star, contentDescription = "收藏")
                     }
-                    IconButton(onClick = { /* 处理分享逻辑 */ }) {
+                    IconButton(onClick = { /* 分享逻辑 */ }) {
                         Icon(Icons.Filled.Share, contentDescription = "分享")
                     }
                 }
@@ -97,98 +102,131 @@ fun PostDetailScreen(
             LazyColumn(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(paddingValues)
+                    .padding(paddingValues),
+                verticalArrangement = Arrangement.spacedBy(16.dp),
+                contentPadding = PaddingValues(16.dp)
             ) {
+                // 推送信息卡片
                 item {
-                    // 显示推送图片
-                    Image(
-                        painter = painterResource(id = post.imageUrl),
-                        contentDescription = "Post Image",
-                        modifier = Modifier.fillMaxSize(),
-                        contentScale = ContentScale.Crop
-                    )
+                    Card(
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
+                    ) {
+                        Column(modifier = Modifier.padding(16.dp)) {
+                            Text(
+                                text = postItem.userId,
+                                style = MaterialTheme.typography.titleMedium,
+                                color = MaterialTheme.colorScheme.secondary
+                            )
+                            Text(
+                                text = "发布时间: ${formatInstantToReadable(postItem.createdAt)}",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurface
+                            )
+                        }
+                    }
+                }
 
-                    Spacer(modifier = Modifier.height(16.dp))
+                // 显示标题和标签
+                item {
+                    Card(
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
+                    ) {
+                        Column(modifier = Modifier.padding(16.dp)) {
+                            Text(
+                                text = postItem.title,
+                                style = MaterialTheme.typography.headlineMedium,
+                                color = MaterialTheme.colorScheme.onSurface
+                            )
+                            TagsDisplay(tags = postItem.tags)
+                        }
+                    }
+                }
 
-                    // 显示推送标题
-                    Text(
-                        text = post.title,
-                        style = MaterialTheme.typography.headlineMedium.copy(
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.onPrimary
-                        ),
-                        modifier = Modifier.padding(horizontal = 16.dp)
-                    )
-
-                    Spacer(modifier = Modifier.height(8.dp))
-
-                    // 显示推送描述
-                    Text(
-                        text = post.description,
-                        style = MaterialTheme.typography.bodyMedium.copy(
-                            color = MaterialTheme.colorScheme.onSurface
-                        ),
-                        modifier = Modifier.padding(horizontal = 16.dp)
-                    )
-
-                    Spacer(modifier = Modifier.height(16.dp))
+                // 显示内容
+                items(postItem.contents.sortedBy { it.order }) { content ->
+                    Card(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp),
+                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
+                    ) {
+                        when (content) {
+                            is TextContent -> RenderTextContent(content)
+                            is ImageContent -> RenderImageContent(content)
+                            is VideoContent -> RenderVideoContent(content)
+                        }
+                    }
                 }
             }
         },
         bottomBar = {
-            // 正常状态的 BottomBar
             BottomAppBar(
                 modifier = Modifier.fillMaxWidth(),
-                containerColor = MaterialTheme.colorScheme.surface,
-                contentPadding = PaddingValues(horizontal = 16.dp)
+                containerColor = MaterialTheme.colorScheme.surface
             ) {
-                // 评论输入框位于底部弹窗底部
-                Row(modifier = Modifier.fillMaxWidth().padding(top = 16.dp), verticalAlignment = Alignment.CenterVertically) {
-                    // 评论按钮，点击后弹出评论区
-                    IconButton(onClick = {
-                        scope.launch {
-                            bottomSheetState.show()
-                        }
-                    }) {
-                        Icon(Icons.Rounded.CommentBank, contentDescription = "评论", tint = MaterialTheme.colorScheme.onPrimary)
+                // 评论按钮，点击后弹出评论区
+                IconButton(onClick = {
+                    scope.launch {
+                        bottomSheetState.show()
                     }
-                    Spacer(modifier = Modifier.width(10.dp))
-                    OutlinedTextField(
-                        // modifier = Modifier.height(56.dp),
-                        value = commentText,
-                        onValueChange = { commentText = it },
-                        placeholder = { Text(text = "写下评论...", fontSize = 12.sp) },
-                        singleLine = true,
-                        shape = MaterialTheme.shapes.medium,
-                        modifier = Modifier.weight(1f).height(56.dp),
-                        keyboardOptions = KeyboardOptions.Default.copy(
-                            imeAction = ImeAction.Send
-                        ),
-                        keyboardActions = KeyboardActions(
-                            onSend = {
-                                // 处理发送评论的逻辑
-                                println("发送的评论: \${commentText.text}")
-                                commentText = TextFieldValue("") // 清空输入框
-                            }
-                        ),
-                        colors = OutlinedTextFieldDefaults.colors(
-                            focusedBorderColor = MaterialTheme.colorScheme.primary,
-                            unfocusedBorderColor = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
+                }) {
+                    Icon(
+                        imageVector = Icons.Rounded.CommentBank,
+                        contentDescription = "评论",
+                        tint = MaterialTheme.colorScheme.onPrimary,
+                        modifier = Modifier.size(24.dp) // 调整图标大小
                     )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Button(
-                        onClick = {
-                        // 处理发送评论的逻辑
-                        println("发送的评论: \${commentText.text}")
-                        commentText = TextFieldValue("") // 清空输入框
-                        },
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = MaterialTheme.colorScheme.secondary
-                        ),
-                    ) {
-                        Text(text = "发送", color = MaterialTheme.colorScheme.onSecondary)
-                    }
+                }
+
+                Spacer(modifier = Modifier.width(10.dp))
+
+                OutlinedTextField(
+                    value = commentText,
+                    onValueChange = { commentText = it },
+                    placeholder = { Text("写下评论...") },
+                    singleLine = true,
+                    modifier = Modifier
+                        .weight(1f)
+                        .height(56.dp),
+                    keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Send),
+                    keyboardActions = KeyboardActions(onSend = {
+                        scope.launch {
+                            // 添加新评论逻辑
+                            if (commentText.isNotEmpty()) {
+                                comments.value += UserComment(
+                                    commentId = UUID.generateUUID(Random).toString(),
+                                    userId = "当前用户",
+                                    postId = postId,
+                                    content = commentText,
+                                    createdAt = Clock.System.now().minus(10, DateTimeUnit.DAY, TimeZone.currentSystemDefault()),
+                                    parentId = null
+                                )
+                                commentText = ""
+                            }
+                        }
+                    })
+                )
+                Button(
+                    onClick = {
+                        scope.launch {
+                            if (commentText.isNotEmpty()) {
+                                comments.value += UserComment(
+                                    commentId = UUID.generateUUID(Random).toString(),
+                                    userId = "当前用户",
+                                    postId = postId,
+                                    content = commentText,
+                                    createdAt = Clock.System.now().minus(10, DateTimeUnit.DAY, TimeZone.currentSystemDefault()),
+                                    parentId = null
+                                )
+                                commentText = ""
+                            }
+                        }
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondary)
+                ) {
+                    Text("发送", color = MaterialTheme.colorScheme.onSecondary)
                 }
             }
         }
@@ -197,79 +235,165 @@ fun PostDetailScreen(
     // 评论区的底部弹窗
     if (bottomSheetState.isVisible) {
         ModalBottomSheet(
-            onDismissRequest = {
-                scope.launch {
-                    bottomSheetState.hide()
-                }
-            },
-            sheetState = bottomSheetState,
+            onDismissRequest = { scope.launch { bottomSheetState.hide() } },
+            sheetState = bottomSheetState
         ) {
-            Column(modifier = Modifier.padding(5.dp)) {
-                CommentsSection(
-                    comments = comments.value,
-                    onReply = { commentId, content ->
-                        comments.value = comments.value.map { comment ->
-                            if (comment.id == commentId) {
-                                comment.copy(
-                                    replies = comment.replies + Comment(
-                                        id = comment.replies.size + 1,
-                                        userName = "当前用户", // 替换为实际的用户信息
-                                        content = content,
-                                        timestamp = "刚刚"
-                                    )
-                                )
-                            } else {
-                                comment
-                            }
-                        }
-                    }
-                )
-            }
+            CommunityCommentsSection(
+                comments = comments.value,
+                onReply = { parentId, replyContent ->
+                    comments.value += UserComment(
+                        commentId = UUID.generateUUID(Random).toString(),
+                        userId = "当前用户",
+                        postId = postId,
+                        content = replyContent,
+                        createdAt = Clock.System.now().minus(10, DateTimeUnit.DAY, TimeZone.currentSystemDefault()),
+                        parentId = parentId
+                    )
+                }
+            )
         }
     }
 }
 
-fun getPostById(postId: String?): Post {
-    // 模拟从数据库或网络获取帖子数据
-    val posts = listOf(
-        Post(
-            postId = "1",
-            title = "物理学革命：从牛顿到爱因斯坦",
-            description = "这是对物理学历史的深入探讨，从经典力学到相对论的演变过程。",
-            imageUrl = R.drawable.newton,  // 替换为实际的图片资源
-            likeCount = 120,
-            commentCount = 45,
-            favoriteCount = 80,
-            shareCount = 10
-        ),
-        Post(
-            postId = "2",
-            title = "量子物理的基础",
-            description = "量子物理学的基本概念和它如何改变我们的世界观。",
-            imageUrl = R.drawable.bohr,  // 替换为实际的图片资源
-            likeCount = 100,
-            commentCount = 30,
-            favoriteCount = 60,
-            shareCount = 15
-        )
-    )
-    return posts.find { it.postId == postId } ?: throw IllegalArgumentException("Post not found with id: $postId")
+fun getPostComments(postId: UUID): List<UserComment> {
+    return exampleUserComments.filter { it.postId == postId }
 }
 
-fun getInitialComments(): List<Comment> {
-    return listOf(
-        Comment(1, "赵明俊", "马上就要到收获的季节了！", "2024-11-02", replies = listOf(
-            Comment(2, "爱因斯坦", "牢底，还得再练", "2024-11-02")
-        )),
-        Comment(3, "李培梁", "大家好我叫李玲珑", "2024-11-02", replies = listOf(
-            Comment(4, "蒋鸿杰", "可爱香草", "2024-11-02"),
-            Comment(5, "赵明俊", "香草捏", "2024-11-02")
+fun getPostById(postId: UUID): Post {
+    val posts = listOf(
+        Post(
+            postId = UUID("68af0708-40c5-4b6f-b78a-91d98d9561bf"),
+            userId = "user001",
+            title = "量子计算的前沿进展",
+            description = "量子计算作为未来计算的核心技术之一，正在深刻改变科学和工程的面貌。",
+            contents = listOf(
+                TextContent(
+                    contentId = 1,
+                    order = 1,
+                    text = "量子计算是当前计算机科学领域的热点研究之一..."
+                ),
+                ImageContent(
+                    contentId = 2,
+                    order = 2,
+                    imageUrl = "https://example.com/images/quantum_computing.png"
+                )
+            ),
+            createdAt = Clock.System.now().minus(10, DateTimeUnit.DAY, TimeZone.currentSystemDefault()),
+            updatedAt = Clock.System.now().minus(3, DateTimeUnit.DAY, TimeZone.currentSystemDefault()),
+            categories = listOf("科学技术", "量子计算"),
+            tags = listOf("量子计算", "科技前沿", "计算机科学")
+        ),
+        Post(
+            postId = UUID("3f9c7a1d-19e0-4e97-aada-5f78e6f2920e"),
+            userId = "user002",
+            title = "人工智能学习指南",
+            description = "为人工智能初学者提供详细的学习路径，涵盖数学、算法和实际应用。",
+            contents = listOf(
+                TextContent(
+                    contentId = 3,
+                    order = 1,
+                    text = "学习人工智能需要从基础数学开始，包括线性代数和概率论..."
+                ),
+                VideoContent(
+                    contentId = 4,
+                    order = 2,
+                    videoUrl = "https://example.com/videos/ai_tutorial.mp4"
+                )
+            ),
+            createdAt = Clock.System.now().minus(15, DateTimeUnit.DAY, TimeZone.currentSystemDefault()),
+            updatedAt = Clock.System.now().minus(5, DateTimeUnit.DAY, TimeZone.currentSystemDefault()),
+            categories = listOf("教育", "人工智能"),
+            tags = listOf("人工智能", "深度学习", "数学基础")
+        ),
+        Post(
+            postId = UUID("b8370b6e-5546-4cb2-af70-e2c81d2d2c66"),
+            userId = "user003",
+            title = "探索可再生能源",
+            description = "深入探讨太阳能、风能等可再生能源的开发与应用技术。",
+            contents = listOf(
+                TextContent(
+                    contentId = 5,
+                    order = 1,
+                    text = "太阳能和风能是目前最具潜力的可再生能源..."
+                ),
+                ImageContent(
+                    contentId = 6,
+                    order = 2,
+                    imageUrl = "https://example.com/images/renewable_energy.png"
+                ),
+                VideoContent(
+                    contentId = 7,
+                    order = 3,
+                    videoUrl = "https://example.com/videos/renewable_energy.mp4"
+                )
+            ),
+            createdAt = Clock.System.now().minus(20, DateTimeUnit.DAY, TimeZone.currentSystemDefault()),
+            updatedAt = Clock.System.now().minus(7, DateTimeUnit.DAY, TimeZone.currentSystemDefault()),
+            categories = listOf("环境保护", "新能源"),
+            tags = listOf("新能源", "太阳能", "风能", "可持续发展")
+        ),
+        Post(
+            postId = UUID("8e937640-9fa1-4699-b823-924f524dfdd4"),
+            userId = "user004",
+            title = "现代艺术表达方式",
+            description = "现代艺术的表达形式不断突破传统，展现创意与文化的碰撞。",
+            contents = listOf(
+                TextContent(
+                    contentId = 8,
+                    order = 1,
+                    text = "现代艺术强调自由表达，突破传统框架..."
+                ),
+                ImageContent(
+                    contentId = 9,
+                    order = 2,
+                    imageUrl = "https://example.com/images/modern_art.png"
+                )
+            ),
+            createdAt = Clock.System.now().minus(5, DateTimeUnit.DAY, TimeZone.currentSystemDefault()),
+            updatedAt = Clock.System.now().minus(1, DateTimeUnit.DAY, TimeZone.currentSystemDefault()),
+            categories = listOf("艺术", "现代艺术"),
+            tags = listOf("现代艺术", "创意", "文化")
+        )
+    )
+    return posts.find { it.postId == postId }
+        ?: throw IllegalArgumentException("Post not found with id: $postId")
+}
 
-        )),
-        Comment(6, "张子洋", "派克不K头玩什么呀！又不是不分钱！", "2024-11-03"),
-        Comment(7, "蒋鸿杰", "可爱香草...", "2024-11-02"),
-        Comment(8, "李培梁", "大家好我叫李玲珑", "2024-11-02"),
-        Comment(9, "李培梁", "大家好我叫李玲珑", "2024-11-02"),
-        Comment(10, "李培梁", "大家好我叫李玲珑", "2024-11-02"),
+
+@Composable
+fun RenderTextContent(content: TextContent) {
+    Text(
+        text = content.text,
+        style = MaterialTheme.typography.bodyLarge.copy(
+            color = MaterialTheme.colorScheme.onSurface
+        ),
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(16.dp)
+    )
+}
+
+@Composable
+fun RenderImageContent(content: ImageContent) {
+    Image(
+        painter = painterResource(id = R.drawable.newton), // 替换为动态图片加载
+        contentDescription = "Image Content",
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(200.dp)
+            .padding(16.dp),
+        contentScale = ContentScale.Crop
+    )
+}
+
+@Composable
+fun RenderVideoContent(content: VideoContent) {
+    Text(
+        text = "视频: ${content.videoUrl}", // 替换为实际的视频播放器
+        style = MaterialTheme.typography.bodyMedium,
+        color = MaterialTheme.colorScheme.primary,
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(16.dp)
     )
 }

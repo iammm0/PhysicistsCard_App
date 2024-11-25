@@ -9,7 +9,6 @@ import androidx.compose.runtime.Composable
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import com.example.physicistscard.android.R
 import com.example.physicistscard.android.auth.screens.LoginEmailScreen
 import com.example.physicistscard.android.auth.screens.LoginNormalScreen
 import com.example.physicistscard.android.auth.screens.LoginPhoneScreen
@@ -23,7 +22,6 @@ import com.example.physicistscard.android.collection.screens.LikedWorksScreen
 import com.example.physicistscard.android.collection.screens.MyWorksScreen
 import com.example.physicistscard.android.collection.screens.SubmitWorkScreen
 import com.example.physicistscard.android.community.CommunityMain
-import com.example.physicistscard.android.community.components.Post
 import com.example.physicistscard.android.community.screens.CollectedPostsScreen
 import com.example.physicistscard.android.community.screens.EditPostScreen
 import com.example.physicistscard.android.community.screens.LikedPostsScreen
@@ -35,10 +33,19 @@ import com.example.physicistscard.android.messages.screens.MessageDetailScreen
 import com.example.physicistscard.android.settings.SettingMain
 import com.example.physicistscard.android.settings.components.ThemeSettingsScreen
 import com.example.physicistscard.android.settings.screens.AboutPhysCardScreen
+import com.example.physicistscard.android.settings.screens.AccountManagementScreen
 import com.example.physicistscard.android.settings.screens.AccountManagerScreen
+import com.example.physicistscard.android.settings.screens.BindEmailScreen
+import com.example.physicistscard.android.settings.screens.BindPhoneScreen
 import com.example.physicistscard.android.settings.screens.FeedbackScreen
 import com.example.physicistscard.android.settings.screens.LanguageSettingsScreen
+import com.example.physicistscard.android.settings.screens.LogoutScreen
+import com.example.physicistscard.android.settings.screens.ResetPasswordScreen
 import com.example.physicistscard.android.settings.screens.UserProfileScreen
+import com.example.physicistscard.android.settings.screens.VerifyIdentityScreen
+import com.example.physicistscard.transmissionModels.auth.user.Role
+import com.example.physicistscard.transmissionModels.auth.user.User
+import kotlinx.datetime.LocalDateTime
 import kotlinx.uuid.UUID
 
 @Composable
@@ -85,11 +92,23 @@ fun NavigationHost(navController: NavHostController) {
             CommunityMain(navController)
         }
         composable("community-edit-post") { EditPostScreen(navController) }
+
         composable("postDetail/{postId}") { backStackEntry ->
-            val postId = backStackEntry.arguments?.getString("postId")
-            // 显示推送详情
-            PostDetailScreen(postId = postId, navController = navController)
+            val postIdString = backStackEntry.arguments?.getString("postId")
+            val postId = try {
+                postIdString?.let { UUID(it) } // 将字符串转换为 UUID
+            } catch (e: IllegalArgumentException) {
+                null // 如果转换失败，处理为 null
+            }
+
+            if (postId != null) {
+                PostDetailScreen(postId = postId, navController = navController)
+            } else {
+                // 处理错误情况，例如显示错误页面
+                ErrorScreen(message = "Invalid Post ID")
+            }
         }
+
         composable("liked-posts") { LikedPostsScreen(navController) }
         composable("collected-posts") { CollectedPostsScreen(navController) }
         composable("my-posts") { MyPostsScreen(navController) }
@@ -165,43 +184,45 @@ fun NavigationHost(navController: NavHostController) {
         composable("setting-appmore") {
             AboutPhysCardScreen(navController = navController)
         }
-        // 账户管理页面
-        composable("setting-account") {
-            AccountManagerScreen(navController = navController)
-        }
         // 个人主页页面
         composable("setting-ourselves") {
-            UserProfileScreen(navController = navController)
+            UserProfileScreen(navController = navController, user = exampleUser)
+        }
+
+        composable("account-management") {
+            AccountManagementScreen(navController)
+        }
+        composable("account-bind-email") {
+            BindEmailScreen()
+        }
+        composable("account-bind-phone") {
+            BindPhoneScreen()
+        }
+        composable("account-verify-identity") {
+            VerifyIdentityScreen()
+        }
+        composable("account-logout") {
+            LogoutScreen(navController)
+        }
+        composable("account-reset-password") {
+            ResetPasswordScreen()
         }
     }
 }
 
-fun getPostById(postId: String?): Post {
-    // 模拟从数据库或网络获取帖子数据
-    val posts = listOf(
-        Post(
-            postId = "1",
-            title = "物理学革命：从牛顿到爱因斯坦",
-            description = "这是对物理学历史的深入探讨，从经典力学到相对论的演变过程。",
-            imageUrl = R.drawable.newton,  // 替换为实际的图片资源
-            likeCount = 120,
-            commentCount = 45,
-            favoriteCount = 80,
-            shareCount = 10
-        ),
-        Post(
-            postId = "2",
-            title = "量子物理的基础",
-            description = "量子物理学的基本概念和它如何改变我们的世界观。",
-            imageUrl = R.drawable.bohr,  // 替换为实际的图片资源
-            likeCount = 100,
-            commentCount = 30,
-            favoriteCount = 60,
-            shareCount = 15
-        )
-    )
-    return posts.find { it.postId == postId } ?: throw IllegalArgumentException("Post not found with id: $postId")
-}
+val exampleUser = User(
+    userId = "user123456",
+    username = "我是明明啊",
+    email = "example@physicistscard.com",
+    phone = "+8613800000000",
+    passwordHash = "e10adc3949ba59abbe56e057f20f883e", // 示例哈希值
+    avatarUrl = "https://example.com/avatar.jpg",
+    bio = "热衷于探索量子物理与人工智能的交叉领域。",
+    registerDate = LocalDateTime.parse("2024-01-01T10:30:00"),
+    isEmailVerified = true,
+    isPhoneVerified = false,
+    role = Role.USER // 普通用户角色
+)
 
 
 fun getMessageById(messageId: String?): Message {

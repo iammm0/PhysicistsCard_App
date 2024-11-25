@@ -1,4 +1,4 @@
-package com.example.physicistscard.android.commonComponents
+package com.example.physicistscard.android.commonComponents.tag
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.padding
@@ -15,14 +15,14 @@ fun HashTagChip(tag: String) {
     Surface(
         shape = RoundedCornerShape(12.dp), // 圆角形状
         color = MaterialTheme.colorScheme.onPrimary,
-        modifier = Modifier.padding(4.dp),
+        modifier = Modifier.padding(2.dp),
         border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary)
     ) {
         Text(
             text = "#$tag", // 带 `#` 样式
             style = MaterialTheme.typography.displaySmall,
             color = MaterialTheme.colorScheme.primary,
-            modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp) // 内边距
+            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp) // 内边距
         )
     }
 }

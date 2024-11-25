@@ -1,10 +1,9 @@
 package com.example.physicistscard.android.collection.components
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
@@ -32,48 +31,52 @@ fun CollectionItemCard(
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
     ) {
         Column(
-            modifier = Modifier.padding(16.dp)
+            modifier = Modifier.padding(12.dp)
         ) {
-            // Image(
-            //     painter = painterResource(id = work.attachment.),
-            //     contentDescription = "Collection Image",
-            //     modifier = Modifier
-            //         .fillMaxWidth()
-            //         .height(180.dp),
-            //     contentScale = ContentScale.Crop
-            // )
 
-            Spacer(modifier = Modifier.height(8.dp))
-
+            // 作者信息
             Text(
                 text = work.authorId,
-                color = MaterialTheme.colorScheme.onSurface,
-                style = MaterialTheme.typography.titleMedium,
-                maxLines = 1,  // 限制显示一行
-                modifier = Modifier.padding(horizontal = 8.dp)
+                color = MaterialTheme.colorScheme.secondary,
+                style = MaterialTheme.typography.bodySmall,
+                maxLines = 1,
+                modifier = Modifier.padding(bottom = 8.dp)
             )
 
             // 作品标题
             Text(
                 text = work.title,
                 color = MaterialTheme.colorScheme.onSurface,
-                style = MaterialTheme.typography.bodyMedium.copy(fontSize = 14.sp),
-                maxLines = 1,  // 限制显示一行
-                modifier = Modifier.padding(horizontal = 8.dp)
+                style = MaterialTheme.typography.titleMedium.copy(fontSize = 16.sp),
+                maxLines = 1,
+                modifier = Modifier.padding(bottom = 8.dp)
             )
-
-            Spacer(modifier = Modifier.height(8.dp))
 
             // 作品描述
             Text(
-                text = if (work.description.length > 30) work.description.take(30) + "..." else work.description,
+                text = if (work.description.length > 40) "${work.description.take(40)}..." else work.description,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 style = MaterialTheme.typography.bodySmall,
-                maxLines = 4,  // 限制描述最多两行
-                modifier = Modifier.padding(horizontal = 8.dp)
+                maxLines = 2,
+                modifier = Modifier.padding(bottom = 8.dp)
             )
 
-            Spacer(modifier = Modifier.height(8.dp))
+            // 标签单独一行
+            work.tags.forEach { tag ->
+                Text(
+                    text = "#$tag",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.secondary,
+                    modifier = Modifier
+                        .padding(vertical = 2.dp)
+                        .fillMaxWidth()
+                        .background(
+                            color = MaterialTheme.colorScheme.secondaryContainer,
+                            shape = RoundedCornerShape(8.dp)
+                        )
+                        .padding(8.dp)
+                )
+            }
         }
     }
 }
