@@ -1,4 +1,4 @@
-package com.example.physicistscard.android.collection.components
+package com.example.physicistscard.android.collection.components.attachment
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column

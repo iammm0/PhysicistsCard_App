@@ -2,7 +2,6 @@ package com.example.physicistscard.android.collection
 
 import android.annotation.SuppressLint
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -38,8 +37,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
-import com.example.physicistscard.android.collection.components.CollectMenu
-import com.example.physicistscard.android.collection.components.CollectionItemCard
+import com.example.physicistscard.android.collection.components.main.CollectMenu
+import com.example.physicistscard.android.collection.components.main.CollectionItemCard
 import com.example.physicistscard.android.data.exampleWorks
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -69,9 +68,9 @@ fun CollectionMain(navController: NavHostController) {
                             singleLine = true,
                             shape = RoundedCornerShape(14.dp),
                             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
-                            keyboardActions = KeyboardActions(onSearch = {
-                                // 执行搜索逻辑
-                            }),
+                            keyboardActions = KeyboardActions(
+                                onSearch = { TODO("执行搜索逻辑") }
+                            ),
                             trailingIcon = {
                                 IconButton(onClick = { /* 触发搜索逻辑 */ }) {
                                     Icon(Icons.Filled.Search, contentDescription = "搜索")

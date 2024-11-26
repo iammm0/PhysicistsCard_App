@@ -10,6 +10,7 @@ import com.example.physicistscard.android.collection.screens.CollectionDetailScr
 import com.example.physicistscard.android.collection.screens.LikedWorksScreen
 import com.example.physicistscard.android.collection.screens.MyWorksScreen
 import com.example.physicistscard.android.collection.screens.SubmitWorkScreen
+import com.example.physicistscard.android.data.exampleMyWorks
 import com.example.physicistscard.android.error.ErrorScreen
 import com.example.physicistscard.android.navigation.whole.BottomNavItem
 import kotlinx.uuid.UUID
@@ -41,16 +42,19 @@ fun CollectionNavHost() {
                 )
             }
         }
-        composable("user-work-status") {
-            MyWorksScreen(navController)
-        }
         // 征集系统相关页面
         composable(BottomNavItem.Collection.route) {
             CollectionMain(navController)
         }
 
-        composable("liked-works") { LikedWorksScreen(navController) }
-        composable("collected-works") { CollectedWorksScreen(navController) }
-        composable("my-works") { MyWorksScreen(navController) }
+        composable("liked-works") {
+            LikedWorksScreen(navController, likedWorks = exampleMyWorks.filter { it.isLiked })
+        }
+        composable("collected-works") {
+            CollectedWorksScreen(navController, collectedWorks = exampleMyWorks.filter { it.isFavorited })
+        }
+        composable("my-works") {
+            MyWorksScreen(navController, allWorks = exampleMyWorks)
+        }
     }
 }

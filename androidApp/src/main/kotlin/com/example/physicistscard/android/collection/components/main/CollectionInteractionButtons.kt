@@ -1,15 +1,12 @@
-package com.example.physicistscard.android.collection.components
+package com.example.physicistscard.android.collection.components.main
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Menu
-import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.outlined.Favorite
 import androidx.compose.material.icons.outlined.MoreHoriz
 import androidx.compose.material.icons.outlined.StarRate
 import androidx.compose.material.icons.outlined.ThumbUp
-import androidx.compose.material.icons.rounded.Favorite
 import androidx.compose.material.icons.rounded.HowToVote
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem

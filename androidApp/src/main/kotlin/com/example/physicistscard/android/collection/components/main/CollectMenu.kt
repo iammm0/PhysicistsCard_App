@@ -1,4 +1,4 @@
-package com.example.physicistscard.android.collection.components
+package com.example.physicistscard.android.collection.components.main
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.material.icons.Icons

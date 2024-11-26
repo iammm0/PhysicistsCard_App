@@ -1,6 +1,7 @@
 package com.example.physicistscard.android.collection.screens
 
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
@@ -16,10 +17,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
+import com.example.physicistscard.android.collection.components.work.WorksList
+import com.example.physicistscard.transmissionModels.collection.MyWork
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun LikedWorksScreen(navController: NavHostController) {
+fun LikedWorksScreen(navController: NavHostController, likedWorks: List<MyWork>) {
     Scaffold(
         topBar = {
             TopAppBar(
@@ -32,14 +35,16 @@ fun LikedWorksScreen(navController: NavHostController) {
             )
         }
     ) { paddingValues ->
-        Box(
-            modifier = Modifier.fillMaxSize().padding(paddingValues),
-            contentAlignment = Alignment.Center
-        ) {
-            Text(
-                text = "我点赞的作品",
-                style = MaterialTheme.typography.titleLarge
-            )
+        if (likedWorks.isEmpty()) {
+            EmptyStateScreen(message = "您还没有点赞任何作品", paddingValues)
+        } else {
+            Column(
+                modifier = Modifier.padding(paddingValues)
+            ) {
+                WorksList(works = likedWorks) { workId ->
+                    navController.navigate("collection-detail/$workId")
+                }
+            }
         }
     }
 }

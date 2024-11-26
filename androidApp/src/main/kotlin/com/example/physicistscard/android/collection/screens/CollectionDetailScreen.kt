@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
@@ -45,8 +46,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import com.example.physicistscard.android.collection.components.AttachmentItem
-import com.example.physicistscard.android.collection.components.CommentsSection
+import com.example.physicistscard.android.collection.components.attachment.AttachmentItem
+import com.example.physicistscard.android.collection.components.comment.CommentsSection
+import com.example.physicistscard.android.collection.components.main.CollectionInteractionButtons
 import com.example.physicistscard.android.commonComponents.tag.TagsDisplay
 import com.example.physicistscard.android.data.exampleAttachments
 import com.example.physicistscard.transmissionModels.collection.Attachment
@@ -91,6 +93,9 @@ fun CollectionDetailScreen(
                     IconButton(onClick = { navController.popBackStack() }) {
                         Icon(Icons.Default.ChevronLeft, contentDescription = "返回")
                     }
+                },
+                actions = {
+                    CollectionInteractionButtons(navController)
                 }
             )
         },
@@ -98,7 +103,7 @@ fun CollectionDetailScreen(
             // 底部评论输入框
             BottomAppBar(
                 containerColor = MaterialTheme.colorScheme.surface,
-                contentPadding = PaddingValues(horizontal = 16.dp)
+                contentPadding = PaddingValues(horizontal = 12.dp)
             ) {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -108,8 +113,11 @@ fun CollectionDetailScreen(
                     IconButton(onClick = { scope.launch { bottomSheetState.show() } }) {
                         Icon(Icons.Rounded.CommentBank, contentDescription = "评论")
                     }
+
                     Spacer(modifier = Modifier.width(8.dp))
+
                     OutlinedTextField(
+                        shape = RoundedCornerShape(24.dp),
                         value = commentText,
                         onValueChange = { commentText = it },
                         placeholder = { Text("写下评论...") },
@@ -118,6 +126,7 @@ fun CollectionDetailScreen(
                             .height(56.dp),
                         singleLine = true,
                         colors = OutlinedTextFieldDefaults.colors(
+                            unfocusedBorderColor = MaterialTheme.colorScheme.primary,
                             focusedBorderColor = MaterialTheme.colorScheme.primary
                         ),
                         keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Send),

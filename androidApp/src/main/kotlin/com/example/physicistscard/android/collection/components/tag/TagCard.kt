@@ -1,4 +1,4 @@
-package com.example.physicistscard.android.collection.components
+package com.example.physicistscard.android.collection.components.tag
 
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer

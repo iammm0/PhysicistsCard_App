@@ -1,4 +1,4 @@
-package com.example.physicistscard.android.collection.components
+package com.example.physicistscard.android.collection.components.comment
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -10,6 +10,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.example.physicistscard.transmissionModels.collection.Comment
 import kotlinx.datetime.Instant
@@ -31,18 +32,29 @@ fun CommentsSection(
         Text(
             text = "评论区",
             style = MaterialTheme.typography.headlineSmall,
-            color = MaterialTheme.colorScheme.primary,
+            color = MaterialTheme.colorScheme.onPrimary,
             modifier = Modifier.padding(bottom = 12.dp)
         )
 
-        LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            items(comments) { comment ->
-                CommentCard(
-                    comment = comment,
-                    onReply = { replyContent ->
-                        onReply(comment.commentId, replyContent)
-                    }
-                )
+        if (comments.isEmpty()) {
+            // 显示提示信息
+            Text(
+                text = "暂时还没有评论，快来抢占第一个评论吧！",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(vertical = 16.dp),
+                textAlign = TextAlign.Center
+            )
+        } else {
+            LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                items(comments) { comment ->
+                    CommentCard(
+                        comment = comment,
+                        onReply = { replyContent ->
+                            onReply(comment.commentId, replyContent)
+                        }
+                    )
+                }
             }
         }
     }

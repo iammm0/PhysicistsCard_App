@@ -6,10 +6,10 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
@@ -29,6 +29,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
@@ -46,7 +47,7 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.physicistscard.android.R
-import com.example.physicistscard.android.collection.components.formatInstantToReadable
+import com.example.physicistscard.android.collection.components.comment.formatInstantToReadable
 import com.example.physicistscard.android.commonComponents.tag.TagsDisplay
 import com.example.physicistscard.android.community.components.CommunityCommentsSection
 import com.example.physicistscard.android.data.exampleUserComments
@@ -163,8 +164,8 @@ fun PostDetailScreen(
         },
         bottomBar = {
             BottomAppBar(
-                modifier = Modifier.fillMaxWidth(),
-                containerColor = MaterialTheme.colorScheme.surface
+                containerColor = MaterialTheme.colorScheme.surface,
+                contentPadding = PaddingValues(horizontal = 16.dp)
             ) {
                 // 评论按钮，点击后弹出评论区
                 IconButton(onClick = {
@@ -175,14 +176,15 @@ fun PostDetailScreen(
                     Icon(
                         imageVector = Icons.Rounded.CommentBank,
                         contentDescription = "评论",
-                        tint = MaterialTheme.colorScheme.onPrimary,
-                        modifier = Modifier.size(24.dp) // 调整图标大小
+                        // tint = MaterialTheme.colorScheme.onPrimary,
+                        // modifier = Modifier.size(24.dp) // 调整图标大小
                     )
                 }
 
-                Spacer(modifier = Modifier.width(10.dp))
+                Spacer(modifier = Modifier.width(8.dp))
 
                 OutlinedTextField(
+                    shape = RoundedCornerShape(24.dp),
                     value = commentText,
                     onValueChange = { commentText = it },
                     placeholder = { Text("写下评论...") },
@@ -190,6 +192,10 @@ fun PostDetailScreen(
                     modifier = Modifier
                         .weight(1f)
                         .height(56.dp),
+                    colors = OutlinedTextFieldDefaults.colors(
+                        unfocusedBorderColor = MaterialTheme.colorScheme.primary,
+                        focusedBorderColor = MaterialTheme.colorScheme.primary
+                    ),
                     keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Send),
                     keyboardActions = KeyboardActions(onSend = {
                         scope.launch {
@@ -208,6 +214,7 @@ fun PostDetailScreen(
                         }
                     })
                 )
+                Spacer(modifier = Modifier.width(8.dp))
                 Button(
                     onClick = {
                         scope.launch {
@@ -263,7 +270,7 @@ fun getPostById(postId: UUID): Post {
     val posts = listOf(
         Post(
             postId = UUID("68af0708-40c5-4b6f-b78a-91d98d9561bf"),
-            userId = "user001",
+            userId = "我是明明啊",
             title = "量子计算的前沿进展",
             description = "量子计算作为未来计算的核心技术之一，正在深刻改变科学和工程的面貌。",
             contents = listOf(
@@ -285,7 +292,7 @@ fun getPostById(postId: UUID): Post {
         ),
         Post(
             postId = UUID("3f9c7a1d-19e0-4e97-aada-5f78e6f2920e"),
-            userId = "user002",
+            userId = "我是明明啊",
             title = "人工智能学习指南",
             description = "为人工智能初学者提供详细的学习路径，涵盖数学、算法和实际应用。",
             contents = listOf(
@@ -307,7 +314,7 @@ fun getPostById(postId: UUID): Post {
         ),
         Post(
             postId = UUID("b8370b6e-5546-4cb2-af70-e2c81d2d2c66"),
-            userId = "user003",
+            userId = "理天帝",
             title = "探索可再生能源",
             description = "深入探讨太阳能、风能等可再生能源的开发与应用技术。",
             contents = listOf(
@@ -334,7 +341,7 @@ fun getPostById(postId: UUID): Post {
         ),
         Post(
             postId = UUID("8e937640-9fa1-4699-b823-924f524dfdd4"),
-            userId = "user004",
+            userId = "李玲珑",
             title = "现代艺术表达方式",
             description = "现代艺术的表达形式不断突破传统，展现创意与文化的碰撞。",
             contents = listOf(

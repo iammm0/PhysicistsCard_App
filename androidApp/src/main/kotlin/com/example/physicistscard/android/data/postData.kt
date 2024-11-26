@@ -9,12 +9,11 @@ import kotlinx.datetime.DateTimeUnit
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.minus
 import kotlinx.uuid.UUID
-import kotlinx.uuid.fromString
 
 val examplePosts = listOf(
     Post(
         postId = UUID("68af0708-40c5-4b6f-b78a-91d98d9561bf"),
-        userId = "user001",
+        userId = "我是明明啊",
         title = "量子计算的前沿进展",
         description = "量子计算作为未来计算的核心技术之一，正在深刻改变科学和工程的面貌。",
         contents = listOf(
@@ -36,7 +35,7 @@ val examplePosts = listOf(
     ),
     Post(
         postId = UUID("3f9c7a1d-19e0-4e97-aada-5f78e6f2920e"),
-        userId = "user002",
+        userId = "我是明明啊",
         title = "人工智能学习指南",
         description = "为人工智能初学者提供详细的学习路径，涵盖数学、算法和实际应用。",
         contents = listOf(
@@ -58,7 +57,7 @@ val examplePosts = listOf(
     ),
     Post(
         postId = UUID("b8370b6e-5546-4cb2-af70-e2c81d2d2c66"),
-        userId = "user003",
+        userId = "理天帝",
         title = "探索可再生能源",
         description = "深入探讨太阳能、风能等可再生能源的开发与应用技术。",
         contents = listOf(
@@ -85,7 +84,7 @@ val examplePosts = listOf(
     ),
     Post(
         postId = UUID("8e937640-9fa1-4699-b823-924f524dfdd4"),
-        userId = "user004",
+        userId = "李玲珑",
         title = "现代艺术表达方式",
         description = "现代艺术的表达形式不断突破传统，展现创意与文化的碰撞。",
         contents = listOf(

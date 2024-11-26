@@ -28,7 +28,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ChevronLeft
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.AssistChip
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -60,7 +59,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.navigation.NavController
 import coil.compose.rememberAsyncImagePainter
-import com.example.physicistscard.android.collection.components.TagInputArea
+import com.example.physicistscard.android.collection.components.tag.TagInputArea
 import com.example.physicistscard.android.themes.PhysicistsCardTheme
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
@@ -135,10 +134,8 @@ fun SubmitWorkScreen(navController: NavController) {
                             colors = OutlinedTextFieldDefaults.colors(
                                 focusedBorderColor = MaterialTheme.colorScheme.secondary,
                                 unfocusedBorderColor = MaterialTheme.colorScheme.onPrimary,
-                                focusedTextColor = MaterialTheme.colorScheme.secondary,
-                                unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
-                                disabledTextColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f),
-                                errorTextColor = MaterialTheme.colorScheme.error,
+                                unfocusedLabelColor = MaterialTheme.colorScheme.onPrimary,
+                                focusedLabelColor = MaterialTheme.colorScheme.secondary,
                             )
                         )
                     }
@@ -161,10 +158,8 @@ fun SubmitWorkScreen(navController: NavController) {
                             colors = OutlinedTextFieldDefaults.colors(
                                 focusedBorderColor = MaterialTheme.colorScheme.secondary,
                                 unfocusedBorderColor = MaterialTheme.colorScheme.onPrimary,
-                                focusedTextColor = MaterialTheme.colorScheme.onPrimary,
-                                unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
-                                disabledTextColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f),
-                                errorTextColor = MaterialTheme.colorScheme.error,
+                                unfocusedLabelColor = MaterialTheme.colorScheme.onPrimary,
+                                focusedLabelColor = MaterialTheme.colorScheme.secondary,
                             ),
                             maxLines = 5,
                             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text)

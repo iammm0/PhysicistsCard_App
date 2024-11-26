@@ -10,6 +10,9 @@ import com.example.physicistscard.android.community.screens.CollectedPostsScreen
 import com.example.physicistscard.android.community.screens.EditPostScreen
 import com.example.physicistscard.android.community.screens.LikedPostsScreen
 import com.example.physicistscard.android.community.screens.MyPostsScreen
+import com.example.physicistscard.android.data.favoritedPosts
+import com.example.physicistscard.android.data.likedPosts
+import com.example.physicistscard.android.data.myPosts
 import com.example.physicistscard.android.error.ErrorScreen
 import com.example.physicistscard.android.navigation.whole.BottomNavItem
 import kotlinx.uuid.UUID
@@ -45,8 +48,23 @@ fun CommunityNavHost() {
             }
         }
 
-        composable("liked-posts") { LikedPostsScreen(navController) }
-        composable("collected-posts") { CollectedPostsScreen(navController) }
-        composable("my-posts") { MyPostsScreen(navController) }
+        composable("liked-posts") {
+            LikedPostsScreen(
+                navController = navController,
+                likedPosts = likedPosts
+            )
+        }
+        composable("collected-posts") {
+            CollectedPostsScreen(
+                navController = navController,
+                collectedPosts = favoritedPosts
+            )
+        }
+        composable("my-posts") {
+            MyPostsScreen(
+                navController = navController,
+                myPost = myPosts
+            )
+        }
     }
 }

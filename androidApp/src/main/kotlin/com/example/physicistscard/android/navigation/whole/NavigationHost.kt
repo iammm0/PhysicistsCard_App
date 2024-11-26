@@ -26,6 +26,10 @@ import com.example.physicistscard.android.community.screens.CollectedPostsScreen
 import com.example.physicistscard.android.community.screens.EditPostScreen
 import com.example.physicistscard.android.community.screens.LikedPostsScreen
 import com.example.physicistscard.android.community.screens.MyPostsScreen
+import com.example.physicistscard.android.data.exampleMyWorks
+import com.example.physicistscard.android.data.favoritedPosts
+import com.example.physicistscard.android.data.likedPosts
+import com.example.physicistscard.android.data.myPosts
 import com.example.physicistscard.android.error.ErrorScreen
 import com.example.physicistscard.android.messages.Message
 import com.example.physicistscard.android.messages.MessageMain
@@ -109,9 +113,24 @@ fun NavigationHost(navController: NavHostController) {
             }
         }
 
-        composable("liked-posts") { LikedPostsScreen(navController) }
-        composable("collected-posts") { CollectedPostsScreen(navController) }
-        composable("my-posts") { MyPostsScreen(navController) }
+        composable("liked-posts") {
+            LikedPostsScreen(
+                navController = navController,
+                likedPosts = likedPosts
+            )
+        }
+        composable("collected-posts") {
+            CollectedPostsScreen(
+                navController = navController,
+                collectedPosts = favoritedPosts
+            )
+        }
+        composable("my-posts") {
+            MyPostsScreen(
+                navController = navController,
+                myPost = myPosts
+            )
+        }
 
         // 征集系统相关页面
         composable(BottomNavItem.Collection.route) {
@@ -136,17 +155,15 @@ fun NavigationHost(navController: NavHostController) {
                 )
             }
         }
-        composable("user-work-status") {
-            MyWorksScreen(navController)
-        }
+
         composable("liked-works") {
-            LikedWorksScreen(navController)
+            LikedWorksScreen(navController, likedWorks = exampleMyWorks.filter { it.isLiked })
         }
         composable("collected-works") {
-            CollectedWorksScreen(navController)
+            CollectedWorksScreen(navController, collectedWorks = exampleMyWorks.filter { it.isFavorited })
         }
         composable("my-works") {
-            MyWorksScreen(navController)
+            MyWorksScreen(navController, allWorks = exampleMyWorks)
         }
 
         // 消息列表的相关界面

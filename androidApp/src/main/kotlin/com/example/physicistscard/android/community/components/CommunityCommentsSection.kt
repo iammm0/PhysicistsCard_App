@@ -11,6 +11,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 
 @Composable
@@ -21,22 +22,33 @@ fun CommunityCommentsSection(
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(16.dp)
+            .padding(12.dp)
     ) {
         Text(
             text = "评论区",
             style = MaterialTheme.typography.headlineSmall,
-            color = MaterialTheme.colorScheme.primary,
+            color = MaterialTheme.colorScheme.onPrimary,
             modifier = Modifier.padding(bottom = 12.dp)
         )
 
-        LazyColumn(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-            items(comments.filter { it.parentId == null }) { comment ->
-                CommunityCommentCard(
-                    comment = comment,
-                    replies = comments.filter { it.parentId == comment.commentId },
-                    onReply = onReply
-                )
+        if (comments.isEmpty()) {
+            // 显示提示信息
+            Text(
+                text = "暂时还没有评论，快来抢占第一个评论吧！",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(vertical = 16.dp),
+                textAlign = TextAlign.Center
+            )
+        } else {
+            LazyColumn(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                items(comments.filter { it.parentId == null }) { comment ->
+                    CommunityCommentCard(
+                        comment = comment,
+                        replies = comments.filter { it.parentId == comment.commentId },
+                        onReply = onReply
+                    )
+                }
             }
         }
     }
